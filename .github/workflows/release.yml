@@ -1,0 +1,52 @@
+name: Release with JReleaser
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@v6
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+
+      - name: Build with Gradle
+        run: ./gradlew build shadowJar cyclonedxBom
+
+      - name: Setup Cosign
+        uses: sigstore/cosign-installer@v3.3.0
+
+      - name: JReleaser Full Release
+        uses: jreleaser/release-action@v2
+        env:
+          JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Docker packaging
+          JRELEASER_DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          JRELEASER_DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          # Homebrew packaging
+          JRELEASER_GITHUB_TOKEN_BREW: ${{ secrets.GH_PAT }}
+          # Sigstore/Cosign signing
+          COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}

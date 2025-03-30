@@ -1,0 +1,37 @@
+# Generated with JReleaser 1.14.0 at 2024-09-13T21:40:10.20688+02:00
+project:
+  name: app
+  version: 1.0.1
+  description: Example App
+  longDescription: Example App
+  authors:
+    - codepitbull
+  license: Apache-2.0
+  links:
+    homepage: https://github.com/codepitbull/releasing-demo
+  java:
+    groupId: de.codepitbull.cli
+    version: 21
+  inceptionYear: 2024
+
+release:
+  github:
+    owner: codepitbull
+    overwrite: true
+
+catalog:
+  sbom:
+    syft:
+      active: ALWAYS
+      pack:
+        enabled: true
+
+distributions:
+  app:
+    artifacts:
+      - path: build/libs/cli-all.jar
+        platform: linux
+files:
+  artifacts:
+    - path: cosign.pub
+    - path: docker-sbom.spdx
